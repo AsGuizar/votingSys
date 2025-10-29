@@ -1,0 +1,14 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\luiso\\OneDrive\\Desktop\\votingSys']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [12872] using WatchFiles
+INFO:     Started server process [2976]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51580 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52711 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:51971 - "WebSocket /ws" [accepted]
+INFO:     connection open

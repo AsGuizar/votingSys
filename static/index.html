@@ -2,76 +2,193 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Votación Electrónica</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Votación Electrónica</title>
+  <meta name="description" content="Sistema de votación electrónica seguro y transparente">
+  <link rel="stylesheet" href="/static/styles.css?v=20251029orange">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🗳️ Votación Electrónica</h1>
-      <p>Sistema Seguro y Transparente</p>
-    </div>
-
-    <div class="content">
-      <!-- PASO 1: Identificación -->
-      <div id="step1" class="step active">
-        <div class="step-title">Identificación de Votante</div>
-        <input type="text" id="voterId" placeholder="Tu ID (ej: DNI123456)" autocomplete="off">
-        <input type="text" id="voterName" placeholder="Tu Nombre Completo" autocomplete="off">
-        <button class="btn-primary" id="btnContinue">Continuar →</button>
-        <div id="identityAlert"></div>
-      </div>
-
-      <!-- PASO 2: Votación -->
-      <div id="step2" class="step">
-        <div class="step-title">Selecciona tu Opción</div>
-        <div id="candidatesList"></div>
-        <button class="btn-primary" id="btnConfirm">✓ Confirmar Voto</button>
-        <button class="btn-secondary" id="btnBack1">← Volver</button>
-        <div id="voteAlert"></div>
-      </div>
-
-      <!-- PASO 3: Confirmación y Resultados -->
-      <div id="step3" class="step">
-        <div class="step-title">¡Voto Registrado Exitosamente!</div>
-
-        <div class="stats">
-          <div class="stat-box">
-            <div class="stat-number" id="totalVotes">0</div>
-            <div class="stat-label">Votos</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="registeredVoters">0</div>
-            <div class="stat-label">Registrados</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="participation">0%</div>
-            <div class="stat-label">Participación</div>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <span class="logo-icon">🗳️</span>
+          <div class="logo-text">
+            <h1>VotaSys</h1>
+            <p>Sistema Electoral Digital</p>
           </div>
         </div>
-
-        <div style="margin-top: 30px;">
-          <h3 style="color: #667eea; margin-bottom: 15px;">Resultados en Tiempo Real</h3>
-          <div id="results"></div>
-        </div>
-
-        <button class="btn-secondary" id="btnAudit">Ver Auditoría</button>
-        <div class="back-link">
-          <a href="javascript:location.reload()">← Nueva votación</a>
+        <div class="connection-status" id="connectionStatus">
+          <span class="status-indicator"></span>
+          <span class="status-text">Conectado</span>
         </div>
       </div>
+    </header>
 
-      <!-- PASO 4: Auditoría -->
-      <div id="step4" class="step">
-        <div class="step-title">Log de Auditoría</div>
-        <button class="btn-secondary btn-small" id="btnToggleIds">🔓 Mostrar IDs Reales (Testing)</button>
-        <div class="audit-log" id="auditLog"></div>
-        <button class="btn-secondary" id="btnBack3">← Volver a Resultados</button>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <main class="app-content">
+      <!-- Panel 1: Identificación -->
+      <section class="panel panel-identity" id="panelIdentity">
+        <div class="panel-header">
+          <h2>🆔 Identificación del Votante</h2>
+          <div class="step-indicator">Paso 1 de 3</div>
+        </div>
+        <div class="panel-body">
+          <p class="intro-text">Por favor, ingresa tus datos para identificarte en el sistema de votación.</p>
+          
+          <div class="form-group">
+            <label for="voterId" class="form-label">
+              <span class="label-text">Documento de Identidad</span>
+              <span class="label-hint">DNI, Pasaporte o ID único</span>
+            </label>
+            <input 
+              type="text" 
+              id="voterId" 
+              class="form-input"
+              placeholder="Ejemplo: DNI12345678"
+              autocomplete="off"
+              aria-required="true"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="voterName" class="form-label">
+              <span class="label-text">Nombre Completo</span>
+              <span class="label-hint">Tal como aparece en tu documento</span>
+            </label>
+            <input 
+              type="text" 
+              id="voterName" 
+              class="form-input"
+              placeholder="Juan Pérez García"
+              autocomplete="off"
+              aria-required="true"
+            >
+          </div>
+
+          <div id="identityAlert" class="alert" role="alert" aria-live="polite"></div>
+
+          <div class="panel-actions">
+            <button id="btnContinue" class="btn btn-primary btn-large">
+              <span>Continuar</span>
+              <span class="btn-icon">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 2: Votación -->
+      <section class="panel panel-vote" id="panelVote" hidden>
+        <div class="panel-header">
+          <h2>🗳️ Selección de Candidato</h2>
+          <div class="step-indicator">Paso 2 de 3</div>
+        </div>
+        <div class="panel-body">
+          <p class="intro-text">Selecciona tu candidato preferido. Puedes revisar tu elección antes de confirmar.</p>
+          
+          <div id="candidatesList" class="candidates-grid" role="radiogroup" aria-label="Lista de candidatos"></div>
+          
+          <div id="voteAlert" class="alert" role="alert" aria-live="polite"></div>
+
+          <div class="panel-actions">
+            <button id="btnBack1" class="btn btn-secondary">
+              <span class="btn-icon">←</span>
+              <span>Volver</span>
+            </button>
+            <button id="btnConfirm" class="btn btn-primary btn-large">
+              <span>Confirmar Voto</span>
+              <span class="btn-icon">✓</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 3: Resultados -->
+      <section class="panel panel-results" id="panelResults" hidden>
+        <div class="panel-header">
+          <h2>✅ Voto Registrado</h2>
+          <div class="step-indicator">Paso 3 de 3</div>
+        </div>
+        <div class="panel-body">
+          <div class="success-message">
+            <div class="success-icon">🎉</div>
+            <h3>¡Tu voto ha sido registrado exitosamente!</h3>
+            <p>Gracias por participar en el proceso democrático.</p>
+          </div>
+
+          <!-- Estadísticas -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-value" id="totalVotes">0</div>
+              <div class="stat-label">Votos Totales</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-value" id="registeredVoters">0</div>
+              <div class="stat-label">Votantes Registrados</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-value" id="participation">0%</div>
+              <div class="stat-label">Participación</div>
+            </div>
+          </div>
+
+          <!-- Resultados en Tiempo Real -->
+          <div class="results-section">
+            <h3 class="section-title">📊 Resultados en Tiempo Real</h3>
+            <div id="results" class="results-list"></div>
+          </div>
+
+          <div class="panel-actions">
+            <button id="btnAudit" class="btn btn-secondary">
+              <span class="btn-icon">🔍</span>
+              <span>Ver Auditoría</span>
+            </button>
+            <button id="btnNewVote" class="btn btn-outline" onclick="location.reload()">
+              <span class="btn-icon">🔄</span>
+              <span>Nueva Votación</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 4: Auditoría -->
+      <section class="panel panel-audit" id="panelAudit" hidden>
+        <div class="panel-header">
+          <h2>🔍 Registro de Auditoría</h2>
+          <div class="step-indicator">Auditoría</div>
+        </div>
+        <div class="panel-body">
+          <p class="intro-text">Registro completo de votos con trazabilidad. Los IDs reales están ocultos por seguridad.</p>
+          
+          <div class="audit-controls">
+            <button id="btnToggleIds" class="btn btn-small btn-outline">
+              <span class="btn-icon">🔓</span>
+              <span id="toggleText">Mostrar IDs Reales</span>
+            </button>
+          </div>
+
+          <div id="auditLog" class="audit-list"></div>
+
+          <div class="panel-actions">
+            <button id="btnBack3" class="btn btn-secondary">
+              <span class="btn-icon">←</span>
+              <span>Volver a Resultados</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Sistema de Votación Electrónica v2.0 · Seguro · Transparente · Auditable</p>
+    </footer>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=20251029orange"></script>
 </body>
 </html>

@@ -17,9 +17,27 @@ class VotingSystem:
     def __init__(self):
         self.voters: Dict[str, dict] = {}
         self.candidates: List[dict] = [
-            {"id": "c1", "name": "Alexandria Ocasio-Cortez", "votes": 0},
-            {"id": "c2", "name": "Ron DeSantis", "votes": 0},
-            {"id": "c3", "name": "Bernie Sanders", "votes": 0},
+            {
+                "id": "c1", 
+                "name": "Alexandria Ocasio-Cortez", 
+                "votes": 0,
+                "party": "Partido Demócrata",
+                "image": "/static/images/aoc.jpg"
+            },
+            {
+                "id": "c2", 
+                "name": "Ron DeSantis", 
+                "votes": 0,
+                "party": "Partido Republicano",
+                "image": "/static/images/desantis.jpg"
+            },
+            {
+                "id": "c3", 
+                "name": "Bernie Sanders", 
+                "votes": 0,
+                "party": "Independiente",
+                "image": "/static/images/sanders.jpg"
+            },
         ]
         self.vote_log: List[dict] = []
         self.active_connections: Set[WebSocket] = set()

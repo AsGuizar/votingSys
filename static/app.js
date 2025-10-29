@@ -1,5 +1,4 @@
 let ws;
-let currentStep = 1;
 let voterId = '';
 let voterName = '';
 let selectedCandidate = null;
@@ -7,6 +6,10 @@ let showingRealIds = false;
 
 function connect() {
   ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+  ws.onopen = () => {
+    updateConnectionStatus(true);
+  };
 
   ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
@@ -23,13 +26,39 @@ function connect() {
     }
   };
 
-  ws.onclose = () => setTimeout(connect, 1000);
+  ws.onclose = () => {
+    updateConnectionStatus(false);
+    setTimeout(connect, 1000);
+  };
+
+  ws.onerror = () => {
+    updateConnectionStatus(false);
+  };
 }
 
-function showStep(step) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step' + step).classList.add('active');
-  currentStep = step;
+function updateConnectionStatus(connected) {
+  const statusEl = document.getElementById('connectionStatus');
+  if (!statusEl) return;
+  
+  const indicator = statusEl.querySelector('.status-indicator');
+  const text = statusEl.querySelector('.status-text');
+  
+  if (connected) {
+    indicator.style.background = '#22c55e';
+    text.textContent = 'Conectado';
+  } else {
+    indicator.style.background = '#ef4444';
+    text.textContent = 'Desconectado';
+  }
+}
+
+function showPanel(panelId) {
+  // Ocultar todos los paneles
+  const panels = ['panelIdentity', 'panelVote', 'panelResults', 'panelAudit'];
+  panels.forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel) panel.hidden = (id !== panelId);
+  });
 }
 
 function nextStep() {
@@ -37,84 +66,133 @@ function nextStep() {
   voterName = document.getElementById('voterName').value.trim();
 
   if (!voterId || !voterName) {
-    showAlert('identityAlert', 'Por favor completa todos los campos', 'error');
+    showAlert('identityAlert', '⚠️ Por favor completa todos los campos', 'error');
     return;
   }
 
-  ws.send(JSON.stringify({
-    action: 'register',
-    voter_id: voterId,
-    name: voterName
+  ws.send(JSON.stringify({ 
+    action: 'register', 
+    voter_id: voterId, 
+    name: voterName 
   }));
 }
 
 function handleRegisterResult(result) {
   if (result.success) {
-    showStep(2);
+    showPanel('panelVote');
   } else {
-    showAlert('identityAlert', result.error, 'error');
+    showAlert('identityAlert', '❌ ' + result.error, 'error');
   }
 }
 
 function displayCandidates(candidates) {
   const list = document.getElementById('candidatesList');
   if (!list) return;
-  list.innerHTML = candidates.map(c => `
-    <div class="candidate-card" id="card-${c.id}" onclick="selectCandidate('${c.id}')">
-      <span class="candidate-name">${c.name}</span>
-    </div>
-  `).join('');
+  
+  console.log('Displaying candidates:', candidates); // Debug
+  
+  list.innerHTML = candidates.map(c => {
+    const initials = c.name.split(' ')
+      .map(p => p[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+    
+    // Mostrar imagen si existe, sino iniciales
+    let avatarContent;
+    if (c.image) {
+      console.log('Image for', c.name, ':', c.image); // Debug
+      avatarContent = `<img src="${c.image}" alt="${c.name}" class="candidate-image">`;
+    } else {
+      avatarContent = `<div class="candidate-initials">${initials}</div>`;
+    }
+    
+    return `
+      <div class="candidate-card" 
+           id="card-${c.id}" 
+           onclick="selectCandidate('${c.id}')" 
+           role="radio" 
+           aria-checked="false"
+           tabindex="0">
+        <div class="candidate-avatar">${avatarContent}</div>
+        <div class="candidate-info">
+          <div class="candidate-name">${c.name}</div>
+          <div class="candidate-party">${c.party || 'ID: ' + c.id}</div>
+        </div>
+        <div class="vote-count">${c.votes} votos</div>
+      </div>
+    `;
+  }).join('');
 }
 
 function selectCandidate(id) {
   selectedCandidate = id;
+  
   document.querySelectorAll('.candidate-card').forEach(card => {
     card.classList.remove('selected');
+    card.setAttribute('aria-checked', 'false');
   });
-  const el = document.getElementById('card-' + id);
-  if (el) el.classList.add('selected');
+  
+  const selectedCard = document.getElementById('card-' + id);
+  if (selectedCard) {
+    selectedCard.classList.add('selected');
+    selectedCard.setAttribute('aria-checked', 'true');
+  }
 }
 
 function submitVote() {
   if (!selectedCandidate) {
-    showAlert('voteAlert', 'Por favor selecciona una opción', 'error');
+    showAlert('voteAlert', '⚠️ Por favor selecciona un candidato', 'error');
     return;
   }
 
-  ws.send(JSON.stringify({
-    action: 'vote',
-    voter_id: voterId,
-    candidate_id: selectedCandidate
+  ws.send(JSON.stringify({ 
+    action: 'vote', 
+    voter_id: voterId, 
+    candidate_id: selectedCandidate 
   }));
 }
 
 function handleVoteResult(result) {
   if (result.success) {
-    showStep(3);
+    showPanel('panelResults');
   } else {
-    showAlert('voteAlert', result.error, 'error');
+    showAlert('voteAlert', '❌ ' + result.error, 'error');
   }
 }
 
 function updateResults(data) {
+  // Actualizar estadísticas
   const totalVotesEl = document.getElementById('totalVotes');
   const registeredVotersEl = document.getElementById('registeredVoters');
   const participationEl = document.getElementById('participation');
+  
   if (totalVotesEl) totalVotesEl.textContent = data.total_votes;
   if (registeredVotersEl) registeredVotersEl.textContent = data.registered_voters;
+  
   const participation = data.registered_voters > 0 
-    ? Math.round(data.voters_who_voted / data.registered_voters * 100) 
+    ? Math.round((data.voters_who_voted / data.registered_voters) * 100) 
     : 0;
   if (participationEl) participationEl.textContent = participation + '%';
 
-  const results = document.getElementById('results');
-  if (!results) return;
-  results.innerHTML = data.candidates.map(c => {
-    const percentage = data.total_votes > 0 ? Math.round(c.votes/data.total_votes*100) : 0;
+  // Actualizar lista de resultados con barras
+  const resultsEl = document.getElementById('results');
+  if (!resultsEl) return;
+  
+  resultsEl.innerHTML = data.candidates.map(c => {
+    const percentage = data.total_votes > 0 
+      ? Math.round((c.votes / data.total_votes) * 100) 
+      : 0;
+    
     return `
-      <div class="candidate-card">
-        <span class="candidate-name">${c.name}</span>
-        <span class="vote-badge">${c.votes} (${percentage}%)</span>
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-name">${c.name}</div>
+          <div class="result-votes">${c.votes} votos (${percentage}%)</div>
+        </div>
+        <div class="result-bar">
+          <div class="result-fill" style="width: ${percentage}%"></div>
+        </div>
       </div>
     `;
   }).join('');
@@ -122,20 +200,22 @@ function updateResults(data) {
 
 function showAudit() {
   ws.send(JSON.stringify({ action: 'get_audit' }));
-  showStep(4);
+  showPanel('panelAudit');
 }
 
 function displayAudit(logs) {
   const auditLog = document.getElementById('auditLog');
   if (!auditLog) return;
+  
   if (logs.length === 0) {
-    auditLog.innerHTML = '<p style="text-align: center; color: #999;">No hay votos registrados aún</p>';
+    auditLog.innerHTML = '<p style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No hay votos registrados aún</p>';
     return;
   }
+  
   auditLog.innerHTML = logs.map(log => `
     <div class="audit-entry">
-      <strong>Candidato:</strong> ${log.candidate_name}<br>
-      <small>Votante Hash: ${log.hashed_voter} • ${new Date(log.timestamp).toLocaleString()}</small>
+      <strong>📋 Candidato:</strong> ${log.candidate_name}<br>
+      <small>🔐 Hash: ${log.hashed_voter} • 🕐 ${new Date(log.timestamp).toLocaleString()}</small>
       <div class="real-id">
         ⚠️ ID Real: ${log.real_voter_id} (${log.voter_name})
       </div>
@@ -145,35 +225,48 @@ function displayAudit(logs) {
 
 function toggleRealIds() {
   showingRealIds = !showingRealIds;
-  const entries = document.querySelectorAll('.audit-entry');
-  entries.forEach(entry => {
-    if (showingRealIds) {
-      entry.classList.add('show-real');
-    } else {
-      entry.classList.remove('show-real');
-    }
+  
+  document.querySelectorAll('.audit-entry').forEach(entry => {
+    entry.classList.toggle('show-real', showingRealIds);
   });
+  
+  const toggleText = document.getElementById('toggleText');
+  if (toggleText) {
+    toggleText.textContent = showingRealIds 
+      ? 'Ocultar IDs Reales' 
+      : 'Mostrar IDs Reales';
+  }
 }
 
 function showAlert(elementId, message, type) {
   const alertDiv = document.getElementById(elementId);
   if (!alertDiv) return;
-  alertDiv.className = 'alert alert-' + type;
+  
+  alertDiv.className = `alert ${type} show`;
   alertDiv.textContent = message;
-  setTimeout(() => alertDiv.innerHTML = '', 3000);
+  
+  setTimeout(() => {
+    alertDiv.classList.remove('show');
+  }, 4000);
 }
 
-function goBack(step) {
-  showStep(step);
-}
-
-// Event bindings
+// Event listeners
 window.addEventListener('load', () => {
+  // Panel de identidad
   document.getElementById('btnContinue')?.addEventListener('click', nextStep);
+  
+  // Panel de votación
   document.getElementById('btnConfirm')?.addEventListener('click', submitVote);
-  document.getElementById('btnBack1')?.addEventListener('click', () => goBack(1));
+  document.getElementById('btnBack1')?.addEventListener('click', () => showPanel('panelIdentity'));
+  
+  // Panel de resultados
   document.getElementById('btnAudit')?.addEventListener('click', showAudit);
+  
+  // Panel de auditoría
   document.getElementById('btnToggleIds')?.addEventListener('click', toggleRealIds);
-  document.getElementById('btnBack3')?.addEventListener('click', () => goBack(3));
+  document.getElementById('btnBack3')?.addEventListener('click', () => showPanel('panelResults'));
+  
+  // Mostrar panel inicial y conectar WebSocket
+  showPanel('panelIdentity');
   connect();
 });
