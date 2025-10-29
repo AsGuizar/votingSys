@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Votación Electrónica</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗳️ Votación Electrónica</h1>
+      <p>Sistema Seguro y Transparente</p>
+    </div>
+
+    <div class="content">
+      <!-- PASO 1: Identificación -->
+      <div id="step1" class="step active">
+        <div class="step-title">Identificación de Votante</div>
+        <input type="text" id="voterId" placeholder="Tu ID (ej: DNI123456)" autocomplete="off">
+        <input type="text" id="voterName" placeholder="Tu Nombre Completo" autocomplete="off">
+        <button class="btn-primary" id="btnContinue">Continuar →</button>
+        <div id="identityAlert"></div>
+      </div>
+
+      <!-- PASO 2: Votación -->
+      <div id="step2" class="step">
+        <div class="step-title">Selecciona tu Opción</div>
+        <div id="candidatesList"></div>
+        <button class="btn-primary" id="btnConfirm">✓ Confirmar Voto</button>
+        <button class="btn-secondary" id="btnBack1">← Volver</button>
+        <div id="voteAlert"></div>
+      </div>
+
+      <!-- PASO 3: Confirmación y Resultados -->
+      <div id="step3" class="step">
+        <div class="step-title">¡Voto Registrado Exitosamente!</div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-number" id="totalVotes">0</div>
+            <div class="stat-label">Votos</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="registeredVoters">0</div>
+            <div class="stat-label">Registrados</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="participation">0%</div>
+            <div class="stat-label">Participación</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+          <h3 style="color: #667eea; margin-bottom: 15px;">Resultados en Tiempo Real</h3>
+          <div id="results"></div>
+        </div>
+
+        <button class="btn-secondary" id="btnAudit">Ver Auditoría</button>
+        <div class="back-link">
+          <a href="javascript:location.reload()">← Nueva votación</a>
+        </div>
+      </div>
+
+      <!-- PASO 4: Auditoría -->
+      <div id="step4" class="step">
+        <div class="step-title">Log de Auditoría</div>
+        <button class="btn-secondary btn-small" id="btnToggleIds">🔓 Mostrar IDs Reales (Testing)</button>
+        <div class="audit-log" id="auditLog"></div>
+        <button class="btn-secondary" id="btnBack3">← Volver a Resultados</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

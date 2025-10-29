@@ -1,0 +1,53 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 30px;
+  text-align: center;
+}
+.header h1 { font-size: 32px; margin-bottom: 10px; }
+.content { padding: 30px; }
+.step { display: none; }
+.step.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.step-title { font-size: 24px; color: #333; margin-bottom: 20px; text-align: center; }
+input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: border 0.3s; }
+input:focus { outline: none; border-color: #667eea; }
+button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+.btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+.btn-secondary { background: #f0f0f0; color: #666; }
+.btn-small { width: auto; padding: 8px 15px; font-size: 14px; margin: 10px 0; }
+.candidate-card { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center; }
+.candidate-card:hover { background: #e9ecef; transform: translateX(5px); }
+.candidate-card.selected { border-color: #667eea; background: linear-gradient(135deg, #f0f4ff 0%, #e9ecff 100%); }
+.candidate-name { font-size: 20px; font-weight: bold; color: #333; }
+.vote-badge { background: #667eea; color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 16px; }
+.alert { padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: 500; animation: slideDown 0.3s; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.alert-success { background: #d4edda; color: #155724; }
+.alert-error { background: #f8d7da; color: #721c24; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+.stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; }
+.stat-number { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+.stat-label { font-size: 12px; opacity: 0.9; }
+.audit-log { background: #f8f9fa; padding: 20px; border-radius: 12px; max-height: 400px; overflow-y: auto; margin-top: 15px; }
+.audit-entry { background: white; padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 14px; border-left: 4px solid #667eea; }
+.audit-entry .real-id { display: none; color: #dc3545; font-weight: bold; margin-top: 5px; }
+.audit-entry.show-real .real-id { display: block; }
+.back-link { text-align: center; margin-top: 20px; }
+.back-link a { color: #667eea; text-decoration: none; font-weight: 500; }
